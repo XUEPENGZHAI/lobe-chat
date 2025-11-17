@@ -1,96 +1,505 @@
 {
+  // ============================================================================
+  // Cyberisite - lobe-chat Submodule VSCode Configuration
+  // ============================================================================
+  // This configuration is auto-generated for the lobe-chat submodule.
+  // It binds language-specific interpreters, build tools, and development environments.
+  // Last updated: 2025-11-17
+  // ============================================================================
+
+  // ============================================================================
+  // GENERAL EDITOR SETTINGS
+  // ============================================================================
+  // Note: Install esbenp.prettier-vscode for default formatting
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": true,
   "editor.codeActionsOnSave": {
-    "source.addMissingImports": "explicit",
     "source.fixAll.eslint": "explicit",
     "source.fixAll.stylelint": "explicit"
   },
-  "editor.formatOnSave": true,
-  // don't show errors, but fix when save and git pre commit
-  "eslint.rules.customizations": [
-    { "rule": "import/order", "severity": "off" },
-    { "rule": "prettier/prettier", "severity": "off" },
-    { "rule": "react/jsx-sort-props", "severity": "off" },
-    { "rule": "sort-keys-fix/sort-keys-fix", "severity": "off" },
-    { "rule": "simple-import-sort/exports", "severity": "off" },
-    { "rule": "typescript-sort-keys/interface", "severity": "off" }
-  ],
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.trimAutoWhitespace": true,
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+
+  // ============================================================================
+  // FILE ASSOCIATIONS & EXCLUSIONS
+  // ============================================================================
+  "files.associations": {
+    "*.cjs": "javascript",
+    "*.mjs": "javascript",
+    ".env.example": "dotenv",
+    ".env.example.development": "dotenv",
+    ".npmrc": "properties",
+    ".bunfig.toml": "toml"
+  },
+  "files.exclude": {
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/CVS": true,
+    "**/.DS_Store": true,
+    "**/node_modules": true,
+    "**/.next": true,
+    "**/dist": true,
+    "**/build": true,
+    "**/.turbo": true,
+    "**/.cache": true,
+    "**/coverage": true,
+    "**/.venv": true,
+    "**/__pycache__": true,
+    "**/*.pyc": true,
+    "**/tmp": true,
+    "**/.temp": true,
+    "**/.idea": true,
+    "**/.vscode-test": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/.next": true,
+    "**/dist": true,
+    "**/build": true,
+    "**/coverage": true,
+    "**/.turbo": true,
+    "**/.git": true,
+    "**/pnpm-lock.yaml": true,
+    "**/package-lock.json": true,
+    "**/yarn.lock": true
+  },
+
+  // ============================================================================
+  // LANGUAGE: JAVASCRIPT / TYPESCRIPT
+  // ============================================================================
+  // Project: Next.js + TypeScript + React 19
+  // Package Manager: pnpm (v10.20.0)
+  // Node.js: LTS/Krypton (v20.x)
+  // ============================================================================
+
+  "[javascript]": {
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    }
+  },
+  "[javascriptreact]": {
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    }
+  },
+  "[typescript]": {
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    }
+  },
+  "[typescriptreact]": {
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    }
+  },
+
+  // ESLint Configuration
+  "eslint.enable": true,
   "eslint.validate": [
     "javascript",
     "javascriptreact",
     "typescript",
     "typescriptreact",
-    // support mdx
     "mdx"
   ],
-  "npm.packageManager": "pnpm",
-  "search.exclude": {
-    "**/node_modules": true,
-    // useless to search this big folder
-    "locales": true
+  "eslint.format.enable": true,
+  "eslint.lintTask.enable": true,
+  "eslint.workingDirectories": [
+    {
+      "mode": "auto"
+    }
+  ],
+
+  // Prettier Configuration
+  "prettier.enable": true,
+
+  // TypeScript Configuration
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "typescript.preferences.importModuleSpecifierFormat": "relative",
+  "typescript.preferences.useImplicitLabelPosition": true,
+  "typescript.preferences.quotePreference": "single",
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "typescript.suggest.autoImports": true,
+  "typescript.suggest.completeFunctionCalls": true,
+  "typescript.inlayHints.parameterNames.enabled": "literals",
+  "typescript.inlayHints.parameterTypes.enabled": true,
+  "typescript.inlayHints.variableTypes.enabled": true,
+  "typescript.inlayHints.propertyDeclarationTypes.enabled": true,
+  "typescript.inlayHints.functionLikeReturnTypes.enabled": true,
+  "typescript.inlayHints.enumMemberValues.enabled": true,
+
+  // JavaScript/TypeScript Linting
+  "js/ts.implicitProjectConfig.checkJs": false,
+  "js/ts.implicitProjectConfig.experimentalDecorators": true,
+  "js/ts.implicitProjectConfig.allowSyntheticDefaultImports": true,
+
+  // ============================================================================
+  // LANGUAGE: JSON
+  // ============================================================================
+  "[json]": {
+    "editor.formatOnSave": true
   },
+  "[jsonc]": {
+    "editor.formatOnSave": true
+  },
+
+  // ============================================================================
+  // LANGUAGE: CSS / SCSS / LESS
+  // ============================================================================
+  "[css]": {
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.stylelint": "explicit"
+    }
+  },
+  "[scss]": {
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.stylelint": "explicit"
+    }
+  },
+  "[less]": {
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.stylelint": "explicit"
+    }
+  },
+
+  // Stylelint Configuration
+  "stylelint.enable": true,
   "stylelint.validate": [
     "css",
+    "scss",
+    "less",
     "postcss",
-    // make stylelint work with tsx antd-style css template string
+    "javascript",
+    "javascriptreact",
+    "typescript",
     "typescriptreact"
   ],
-  "vitest.maximumConfigs": 20,
-  "workbench.editor.customLabels.patterns": {
-    "**/app/**/[[]*[]]/[[]*[]]/page.tsx": "${dirname(2)}/${dirname(1)}/${dirname} • page component",
-    "**/app/**/[[]*[]]/page.tsx": "${dirname(1)}/${dirname} • page component",
-    "**/app/**/page.tsx": "${dirname} • page component",
 
-    "**/app/**/[[]*[]]/[[]*[]]/layout.tsx": "${dirname(2)}/${dirname(1)}/${dirname} • page layout",
-    "**/app/**/[[]*[]]/layout.tsx": "${dirname(1)}/${dirname} • page layout",
-    "**/app/**/layout.tsx": "${dirname} • page layout",
+  // ============================================================================
+  // LANGUAGE: MARKDOWN / MDX
+  // ============================================================================
+  "[markdown]": {
+    "editor.formatOnSave": true,
+    "editor.wordWrap": "on",
+    "editor.rulers": [80, 120]
+  },
+  "[mdx]": {
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    }
+  },
 
-    "**/app/**/[[]*[]]/[[]*[]]/default.tsx": "${dirname(2)}/${dirname(1)}/${dirname} • slot default",
-    "**/app/**/[[]*[]]/default.tsx": "${dirname(1)}/${dirname} • slot default",
-    "**/app/**/default.tsx": "${dirname} • slot default",
+  // ============================================================================
+  // LANGUAGE: YAML
+  // ============================================================================
+  "[yaml]": {
+    "editor.formatOnSave": true,
+    "editor.tabSize": 2
+  },
 
-    "**/app/**/[[]*[]]/[[]*[]]/error.tsx": "${dirname(2)}/${dirname(1)}/${dirname} • error component",
-    "**/app/**/[[]*[]]/error.tsx": "${dirname(1)}/${dirname} • error component",
-    "**/app/**/error.tsx": "${dirname} • error component",
+  // ============================================================================
+  // LANGUAGE: DOCKERFILE
+  // ============================================================================
+  // Note: Install ms-azuretools.vscode-docker for formatting support
+  "[dockerfile]": {
+    "editor.formatOnSave": false
+  },
 
-    "**/app/**/[[]*[]]/[[]*[]]/loading.tsx": "${dirname(2)}/${dirname(1)}/${dirname} • loading component",
-    "**/app/**/[[]*[]]/loading.tsx": "${dirname(1)}/${dirname} • loading component",
-    "**/app/**/loading.tsx": "${dirname} • loading component",
+  // ============================================================================
+  // LANGUAGE: SHELL / BASH
+  // ============================================================================
+  // Note: Install foxundermoon.shell-format for formatting support
+  "[shellscript]": {
+    "editor.formatOnSave": false
+  },
 
-    "**/src/**/route.ts": "${dirname(1)}/${dirname} • route",
-    "**/src/**/index.tsx": "${dirname} • component",
+  // ============================================================================
+  // LANGUAGE: TOML
+  // ============================================================================
+  // Note: TOML formatting support requires a community extension
+  "[toml]": {
+    "editor.formatOnSave": false
+  },
 
-    "**/packages/database/src/repositories/*/index.ts": "${dirname} • db repository",
-    "**/packages/database/src/models/*.ts": "${filename} • db model",
-    "**/packages/database/src/schemas/*.ts": "${filename} • db schema",
+  // ============================================================================
+  // LANGUAGE: PROPERTIES / ENV
+  // ============================================================================
+  "[properties]": {},
+  "[dotenv]": {},
 
-    "**/src/services/*.ts": "${filename} • service",
-    "**/src/services/*/client.ts": "${dirname} • client service",
-    "**/src/services/*/server.ts": "${dirname} • server service",
+  // ============================================================================
+  // LANGUAGE: HTML
+  // ============================================================================
+  "[html]": {
+    "editor.formatOnSave": true
+  },
 
-    "**/src/store/*/action.ts": "${dirname} • action",
-    "**/src/store/*/slices/*/action.ts": "${dirname(2)}/${dirname} • action",
-    "**/src/store/*/slices/*/actions/*.ts": "${dirname(1)}/${dirname}/${filename} • action",
+  // ============================================================================
+  // LANGUAGE: XML
+  // ============================================================================
+  "[xml]": {
+    "editor.formatOnSave": true
+  },
 
-    "**/src/store/*/initialState.ts": "${dirname} • state",
-    "**/src/store/*/slices/*/initialState.ts": "${dirname(2)}/${dirname} • state",
+  // ============================================================================
+  // EXTENSIONS: ESLINT
+  // ============================================================================
+  "eslint.codeAction.showDocumentation": {
+    "enable": true
+  },
 
-    "**/src/store/*/selectors.ts": "${dirname} • selectors",
-    "**/src/store/*/slices/*/selectors.ts": "${dirname(2)}/${dirname} • selectors",
+  // ============================================================================
+  // EXTENSIONS: PRETTIER
+  // ============================================================================
+  "prettier.printWidth": 100,
+  "prettier.semi": true,
+  "prettier.singleQuote": true,
+  "prettier.trailingComma": "es5",
+  "prettier.bracketSpacing": true,
+  "prettier.arrowParens": "always",
+  "prettier.endOfLine": "lf",
 
-    "**/src/store/*/reducer.ts": "${dirname} • reducer",
-    "**/src/store/*/slices/*/reducer.ts": "${dirname(2)}/${dirname} • reducer",
+  // ============================================================================
+  // EXTENSIONS: NEXT.JS
+  // ============================================================================
+  "next.telemetry": false,
 
-    "**/src/config/modelProviders/*.ts": "${filename} • provider",
-    "**/packages/model-bank/src/aiModels/*.ts": "${filename} • model",
-    "**/packages/model-runtime/src/providers/*/index.ts": "${dirname} • runtime",
+  // ============================================================================
+  // EXTENSIONS: REACT
+  // ============================================================================
+  "react.version": "detect",
 
-    "**/src/server/services/*/index.ts": "${dirname} • server/service",
-    "**/src/server/routers/lambda/*.ts": "${filename} • lambda",
-    "**/src/server/routers/async/*.ts": "${filename} • async",
-    "**/src/server/routers/edge/*.ts": "${filename} • edge",
+  // ============================================================================
+  // EXTENSIONS: VITEST
+  // ============================================================================
+  // Note: Install vitest.explorer extension for test runner integration
+  // "vitest.commandLine": "pnpm vitest",
 
-    "**/src/locales/default/*.ts": "${filename} • locale",
+  // ============================================================================
+  // EXTENSIONS: GIT
+  // ============================================================================
+  "git.autofetch": true,
+  "git.autorefresh": true,
+  "git.confirmSync": false,
+  "git.ignoreLimitWarning": true,
 
-    "**/index.*": "${dirname}/${filename}.${extname}"
-  }
+  // ============================================================================
+  // EXTENSIONS: TERMINAL
+  // ============================================================================
+  "terminal.integrated.defaultProfile.windows": "PowerShell",
+  "terminal.integrated.defaultProfile.linux": "bash",
+  "terminal.integrated.defaultProfile.osx": "zsh",
+  "terminal.integrated.fontSize": 12,
+  "terminal.integrated.lineHeight": 1.2,
+  "terminal.integrated.scrollback": 1000,
+
+  // ============================================================================
+  // EXTENSIONS: EXPLORER
+  // ============================================================================
+  "explorer.compactFolders": true,
+  "explorer.confirmDelete": true,
+  "explorer.confirmDragAndDrop": true,
+
+  // ============================================================================
+  // EXTENSIONS: OUTLINE
+  // ============================================================================
+  "outline.showKeys": true,
+  "outline.showStrings": false,
+  "outline.showNumbers": false,
+  "outline.showBooleans": false,
+  "outline.showArrays": false,
+  "outline.showObjects": false,
+  "outline.showEnums": false,
+  "outline.showVariables": false,
+  "outline.showConstants": false,
+  "outline.showProperties": false,
+  "outline.showMethods": true,
+  "outline.showFunctions": true,
+  "outline.showClasses": true,
+  "outline.showStructs": true,
+  "outline.showInterfaces": true,
+  "outline.showModules": true,
+  "outline.showNamespaces": true,
+  "outline.showPackages": true,
+  "outline.showTypeParameters": true,
+  "outline.showOperators": false,
+  "outline.showTypeAliases": true,
+  "outline.showEnumMembers": false,
+
+  // ============================================================================
+  // EXTENSIONS: BREADCRUMB
+  // ============================================================================
+  "breadcrumbs.enabled": true,
+  "breadcrumbs.showKeys": false,
+
+  // ============================================================================
+  // EXTENSIONS: MINIMAP
+  // ============================================================================
+  "editor.minimap.enabled": true,
+  "editor.minimap.maxColumn": 120,
+  "editor.minimap.renderCharacters": true,
+  "editor.minimap.scale": 1,
+  "editor.minimap.showSlider": "mouseover",
+
+  // ============================================================================
+  // EXTENSIONS: WORD WRAP & RULERS
+  // ============================================================================
+  "editor.wordWrap": "off",
+  "editor.rulers": [80, 100, 120],
+  "editor.renderWhitespace": "selection",
+  "editor.renderControlCharacters": false,
+
+  // ============================================================================
+  // EXTENSIONS: FONT & THEME
+  // ============================================================================
+  "editor.fontFamily": "'Fira Code', 'Cascadia Code', 'Consolas', monospace",
+  "editor.fontSize": 13,
+  "editor.fontLigatures": true,
+  "editor.lineHeight": 1.6,
+  "editor.letterSpacing": 0,
+
+  // ============================================================================
+  // EXTENSIONS: SEARCH
+  // ============================================================================
+  "search.smartCase": true,
+  "search.followSymlinks": true,
+  "search.useIgnoreFiles": true,
+
+  // ============================================================================
+  // EXTENSIONS: PROBLEMS PANEL
+  // ============================================================================
+  "problems.showCurrentInStatus": true,
+  "problems.sortOrder": "severity",
+
+  // ============================================================================
+  // EXTENSIONS: WORKBENCH
+  // ============================================================================
+  "workbench.editor.enablePreview": true,
+  "workbench.editor.enablePreviewFromQuickOpen": false,
+  "workbench.editor.tabCloseButton": "right",
+  "workbench.editor.tabSizing": "fit",
+  "workbench.startupEditor": "none",
+  "workbench.commandPalette.history": 50,
+  "workbench.commandPalette.preserveInput": true,
+
+  // ============================================================================
+  // EXTENSIONS: QUICK OPEN
+  // ============================================================================
+  "workbench.quickOpen.preserveInput": true,
+  "workbench.quickOpen.history": 50,
+
+  // ============================================================================
+  // EXTENSIONS: SETTINGS SYNC
+  // ============================================================================
+  "settingsSync.ignoredExtensions": [],
+  "settingsSync.keybindingsPerPlatform": false,
+
+  // ============================================================================
+  // EXTENSIONS: ACCESSIBILITY
+  // ============================================================================
+  "editor.accessibilitySupport": "auto",
+  "editor.accessibilityPageSize": 10,
+
+  // ============================================================================
+  // EXTENSIONS: PERFORMANCE
+  // ============================================================================
+  "editor.largeFileOptimizations": true,
+  "editor.maxTokenizationLineLength": 20000,
+  "files.watcherExclude": {
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/node_modules/**": true,
+    "**/.next/**": true,
+    "**/dist/**": true,
+    "**/build/**": true,
+    "**/coverage/**": true,
+    "**/.turbo/**": true,
+    "**/.cache/**": true,
+    "**/pnpm-lock.yaml": true
+  },
+
+  // ============================================================================
+  // EXTENSIONS: SECURITY
+  // ============================================================================
+  "security.workspace.trust.untrustedFiles": "open",
+
+  // ============================================================================
+  // EXTENSIONS: TELEMETRY
+  // ============================================================================
+  "telemetry.telemetryLevel": "off",
+  "telemetry.enableTelemetry": false,
+
+  // ============================================================================
+  // EXTENSIONS: UPDATES
+  // ============================================================================
+  "update.mode": "manual",
+  "update.showReleaseNotes": false,
+
+  // ============================================================================
+  // EXTENSIONS: EXTENSIONS
+  // ============================================================================
+  "extensions.autoUpdate": true,
+  "extensions.autoCheckUpdates": true,
+  "extensions.ignoreRecommendations": false,
+
+  // ============================================================================
+  // RECOMMENDED EXTENSIONS FOR THIS PROJECT
+  // ============================================================================
+  // Install these extensions for optimal development experience:
+  // - ESLint (dbaeumer.vscode-eslint)
+  // - Prettier (esbenp.prettier-vscode)
+  // - Stylelint (stylelint.vscode-stylelint)
+  // - GitLens (eamodio.gitlens)
+  // - Markdown All in One (yzhang.markdown-all-in-one)
+  // - YAML (redhat.vscode-yaml)
+  // ============================================================================
+
+  // ============================================================================
+  // PROJECT-SPECIFIC NOTES
+  // ============================================================================
+  // Project: lobe-chat (Next.js + TypeScript + React 19)
+  // Package Manager: pnpm (v10.20.0) - DO NOT USE npm or yarn
+  // Node.js Version: LTS/Krypton (v20.x) - Managed via .nvmrc
+  // TypeScript: v5.9.3
+  // Build Tool: Next.js 16.0.3
+  // Test Framework: Vitest 3.2.4
+  // Linter: ESLint 8.57.1 (via @lobehub/lint)
+  // Formatter: Prettier 3.6.2 (via @lobehub/lint)
+  // Style Linter: Stylelint 15.11.0 (via @lobehub/lint)
+  //
+  // Key Commands:
+  // - pnpm install          : Install dependencies
+  // - pnpm dev              : Start development server (port 3010)
+  // - pnpm build            : Build for production
+  // - pnpm lint             : Run all linters (ESLint + Stylelint + TypeScript)
+  // - pnpm lint:ts          : Run ESLint
+  // - pnpm lint:style       : Run Stylelint
+  // - pnpm type-check       : Run TypeScript type checking
+  // - pnpm test-app         : Run Vitest
+  // - pnpm test-app:coverage: Run Vitest with coverage
+  // - pnpm prettier         : Format all files
+  // - pnpm start            : Start production server (port 3210)
+  //
+  // Workspace Structure:
+  // - packages/*             : Monorepo packages
+  // - src/                   : Main application source
+  // - e2e/                   : End-to-end tests
+  // - tests/                 : Unit tests
+  // - public/                : Static assets
+  // - docs/                  : Documentation
+  // ============================================================================
 }

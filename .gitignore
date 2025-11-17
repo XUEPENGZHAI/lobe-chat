@@ -23,7 +23,6 @@ Desktop.ini
 .history/
 .windsurfrules
 *.code-workspace
-.vscode/sessions.json
 
 # Temporary files
 .temp/
