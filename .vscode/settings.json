@@ -230,9 +230,9 @@
   // ============================================================================
   // LANGUAGE: TOML
   // ============================================================================
-  // Note: TOML formatting support requires a community extension
+  // Note: Install tamasfe.even-better-toml for TOML formatting support
   "[toml]": {
-    "editor.formatOnSave": false
+    "editor.formatOnSave": true
   },
 
   // ============================================================================

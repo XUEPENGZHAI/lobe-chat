@@ -2,12 +2,14 @@
     "recommendations": [
         "Anthropic.claude-code",
         "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
         "jrr997.antd-docs",
         "seatonjiang.gitmoji-vscode",
         "styled-components.vscode-styled-components",
         "stylelint.vscode-stylelint",
+        "tamasfe.even-better-toml",
         "unifiedjs.vscode-mdx",
         "unifiedjs.vscode-remark",
-        "vitest.explorer",
+        "vitest.explorer"
     ]
 }
