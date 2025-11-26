@@ -176,7 +176,8 @@ export const chatThreadMessage: StateCreator<
       messages,
       parentMessageId,
       parentMessageType: 'user',
-      ragQuery: get().internal_shouldUseRAG() ? message : undefined,
+      sessionId: get().activeId,
+      topicId: get().activeTopicId,
       threadId: get().portalThreadId,
       inPortalThread: true,
     });

@@ -153,7 +153,16 @@ const TopicContent = memo<TopicContentProps>(({ id, title, fav, showMore }) => {
         },
       },
     ],
-    [id, activeId, autoRenameTopicTitle, duplicateTopic, removeTopic, t, toggleEditing, openTopicInNewWindow],
+    [
+      id,
+      activeId,
+      autoRenameTopicTitle,
+      duplicateTopic,
+      removeTopic,
+      t,
+      toggleEditing,
+      openTopicInNewWindow,
+    ],
   );
 
   return (
@@ -180,7 +189,7 @@ const TopicContent = memo<TopicContentProps>(({ id, title, fav, showMore }) => {
         spin={isLoading}
       />
       {!editing ? (
-        title === LOADING_FLAT ? (
+        title === LOADING_FLAT || (isLoading && !title) ? (
           <Flexbox flex={1} height={28} justify={'center'}>
             <BubblesLoading />
           </Flexbox>
@@ -190,7 +199,7 @@ const TopicContent = memo<TopicContentProps>(({ id, title, fav, showMore }) => {
             ellipsis={{ rows: 1, tooltip: { placement: 'left', title } }}
             onDoubleClick={() => {
               if (isDesktop) {
-                openTopicInNewWindow(activeId, id)
+                openTopicInNewWindow(activeId, id);
               }
             }}
             style={{ margin: 0 }}
@@ -228,6 +237,7 @@ const TopicContent = memo<TopicContentProps>(({ id, title, fav, showMore }) => {
             className="topic-more"
             icon={MoreVertical}
             onClick={(e) => {
+              e.preventDefault();
               e.stopPropagation();
             }}
             size={'small'}
