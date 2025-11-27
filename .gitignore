@@ -114,6 +114,4 @@ CLAUDE.local.md
 *.doc*
 *.xls*
 
-prd
-GEMINI.md
 e2e/reports
