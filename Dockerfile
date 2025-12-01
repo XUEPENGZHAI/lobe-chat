@@ -113,7 +113,7 @@ RUN \
 COPY . .
 
 # run build standalone for docker version
-RUN npm run build:docker
+RUN pnpm run build:docker
 
 ## Application image, copy all the files for production
 FROM busybox:latest AS app

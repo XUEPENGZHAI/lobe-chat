@@ -2,7 +2,6 @@ import { isDesktop } from '@lobechat/const';
 import { Icon } from '@lobehub/ui';
 import {
   Bot,
-  Brain,
   Database,
   EthernetPort,
   Image as ImageIcon,
@@ -44,11 +43,6 @@ export const useCategory = () => {
         },
         {
           type: 'divider',
-        },
-        {
-          icon: <Icon icon={Brain} />,
-          key: SettingsTabs.Provider,
-          label: t('tab.provider'),
         },
         showAiImage && {
           icon: <Icon icon={ImageIcon} />,

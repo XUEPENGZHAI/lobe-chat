@@ -16,6 +16,7 @@ import { pino } from '@/libs/logger';
 import { merge } from '@/utils/merge';
 
 import { AgentService } from '../agent';
+import { OneAPISyncService } from '../oneapiSync';
 import {
   mapAdapterUserToLobeUser,
   mapAuthenticatorQueryResutlToAdapterAuthenticator,
@@ -135,6 +136,19 @@ export class NextAuthUserService {
     // 3. Create an inbox session for the user
     const agentService = new AgentService(this.db, uid);
     await agentService.createInbox();
+
+    // 4. Sync user to one-api (create account and activate ai_chat feature)
+    try {
+      const oneAPISyncService = new OneAPISyncService(this.db);
+      await oneAPISyncService.syncUserToOneAPI(uid, {
+        username: name || email?.split('@')[0] || uid,
+        email: email || undefined,
+      });
+      pino.info({ userId: uid }, 'User synced to one-api successfully');
+    } catch (error) {
+      // Log error but don't fail user creation - one-api sync can be retried later
+      pino.error({ error, userId: uid }, 'Failed to sync user to one-api');
+    }
 
     return { ...user, id: uid };
   };
