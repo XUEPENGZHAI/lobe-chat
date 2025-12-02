@@ -4,10 +4,9 @@
  */
 
 import { LobeChatDatabase } from '@lobechat/database';
-import { eq, sql } from 'drizzle-orm';
+import { sql } from 'drizzle-orm';
 import * as crypto from 'node:crypto';
 
-import { users } from '@/database/schemas';
 import { pino } from '@/libs/logger';
 import { OneAPIService } from '@/services/oneapi';
 
@@ -87,17 +86,15 @@ export class OneAPISyncService {
         }
       }
 
-      // 3. 保存凭证到 lobe-chat 用户记录
+      // 3. 保存凭证到 lobe-chat 用户记录（使用原生 SQL，因为这些字段在 init-db.sql 中添加）
       const encryptedToken = oneApiToken ? encryptToken(oneApiToken) : null;
 
-      await this.db
-        .update(users)
-        .set({
-          // @ts-ignore - 这些字段在 init-db.sql 中添加
-          oneapi_user_id: oneApiUserId,
-          oneapi_token_encrypted: encryptedToken,
-        })
-        .where(eq(users.id, userId));
+      await this.db.execute(sql`
+        UPDATE users
+        SET oneapi_user_id = ${oneApiUserId},
+            oneapi_token_encrypted = ${encryptedToken}
+        WHERE id = ${userId}
+      `);
 
       pino.info({ userId, oneApiUserId }, 'OneAPI credentials saved');
 
