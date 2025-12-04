@@ -34,7 +34,7 @@ export interface UserInfo {
   email: string;
   role: number;
   status: number;
-  quota: number; // 余额（单位：分，需除以1000转换为元）
+  quota: number; // 余额（one-api 内部单位，默认 500000 = 1 元，可在 one-api 后台配置 QuotaPerUnit）
   used_quota: number;
   request_count: number;
   group: string;

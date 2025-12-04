@@ -1,9 +1,11 @@
 'use client';
 
-import { Card, Skeleton, Typography } from 'antd';
+import { Card, Typography } from 'antd';
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Flexbox } from 'react-layout-kit';
+
+import { AccountBalance, HistoryTable, UsageChart } from '@/features/OneAPI';
 
 const { Title, Text } = Typography;
 
@@ -11,17 +13,13 @@ const { Title, Text } = Typography;
  * Usage Page - One-API Account Management
  *
  * This page displays one-api account information:
- * - Balance display
- * - Top-up functionality
- * - Usage statistics (from one-api)
- * - Consumption history
+ * - Balance display (AccountBalance - implemented)
+ * - Top-up functionality (integrated in AccountBalance)
+ * - Usage statistics (UsageChart - implemented)
+ * - Consumption history (HistoryTable - implemented)
  * - Feature management
  *
  * TODO: Implement the following components:
- * - BalanceCard: Display current balance from one-api
- * - TopupPanel: Top-up functionality
- * - UsageChart: Usage statistics from one-api logs
- * - HistoryTable: Consumption history from one-api
  * - FeatureManager: Feature subscription management
  */
 
@@ -34,90 +32,14 @@ const Client = memo<UsagePageProps>(({ mobile }) => {
 
   return (
     <Flexbox gap={mobile ? 16 : 24} style={{ padding: mobile ? 16 : 0 }}>
-      {/* Balance Card - TODO: Connect to one-api */}
-      <Card>
-        <Flexbox gap={8}>
-          <Title level={5}>账户余额</Title>
-          <Flexbox align="baseline" gap={4} horizontal>
-            <Text style={{ fontSize: 32, fontWeight: 600 }}>--</Text>
-            <Text type="secondary">元</Text>
-          </Flexbox>
-          <Text type="secondary">
-            数据来源：one-api（待接入）
-          </Text>
-        </Flexbox>
-      </Card>
+      {/* Balance Card - Connected to one-api with integrated top-up */}
+      <AccountBalance showTopupButton />
 
-      {/* Quick Actions */}
-      <Card>
-        <Flexbox gap={16}>
-          <Title level={5}>快捷操作</Title>
-          <Flexbox gap={12} horizontal wrap="wrap">
-            <Card size="small" style={{ cursor: 'pointer', minWidth: 120 }}>
-              <Flexbox align="center" gap={4}>
-                <Text>💰</Text>
-                <Text>充值</Text>
-              </Flexbox>
-            </Card>
-            <Card size="small" style={{ cursor: 'pointer', minWidth: 120 }}>
-              <Flexbox align="center" gap={4}>
-                <Text>📊</Text>
-                <Text>统计</Text>
-              </Flexbox>
-            </Card>
-            <Card size="small" style={{ cursor: 'pointer', minWidth: 120 }}>
-              <Flexbox align="center" gap={4}>
-                <Text>📋</Text>
-                <Text>记录</Text>
-              </Flexbox>
-            </Card>
-          </Flexbox>
-        </Flexbox>
-      </Card>
+      {/* Usage Statistics - Connected to one-api (Requirements 4.1, 4.2, 4.3, 4.4) */}
+      <UsageChart days={30} showTrendChart />
 
-      {/* Usage Statistics - TODO: Connect to one-api */}
-      <Card>
-        <Flexbox gap={16}>
-          <Title level={5}>使用统计</Title>
-          <Flexbox gap={16} horizontal wrap="wrap">
-            <Card size="small" style={{ flex: 1, minWidth: 150 }}>
-              <Flexbox gap={4}>
-                <Text type="secondary">本月调用</Text>
-                <Text style={{ fontSize: 24, fontWeight: 500 }}>--</Text>
-                <Text type="secondary">次</Text>
-              </Flexbox>
-            </Card>
-            <Card size="small" style={{ flex: 1, minWidth: 150 }}>
-              <Flexbox gap={4}>
-                <Text type="secondary">本月消费</Text>
-                <Text style={{ fontSize: 24, fontWeight: 500 }}>--</Text>
-                <Text type="secondary">元</Text>
-              </Flexbox>
-            </Card>
-            <Card size="small" style={{ flex: 1, minWidth: 150 }}>
-              <Flexbox gap={4}>
-                <Text type="secondary">平均消费</Text>
-                <Text style={{ fontSize: 24, fontWeight: 500 }}>--</Text>
-                <Text type="secondary">元/次</Text>
-              </Flexbox>
-            </Card>
-          </Flexbox>
-          <Text type="secondary">
-            统计数据来源：one-api（待接入）
-          </Text>
-        </Flexbox>
-      </Card>
-
-      {/* Consumption History - TODO: Connect to one-api */}
-      <Card>
-        <Flexbox gap={16}>
-          <Title level={5}>消费记录</Title>
-          <Skeleton active paragraph={{ rows: 4 }} />
-          <Text type="secondary">
-            消费记录来源：one-api（待接入）
-          </Text>
-        </Flexbox>
-      </Card>
+      {/* Consumption History - Connected to one-api (Requirements 5.1, 5.2, 5.3, 5.4) */}
+      <HistoryTable pageSize={20} />
 
       {/* Feature Management - TODO: Implement */}
       <Card>
