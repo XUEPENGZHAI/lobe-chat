@@ -20,7 +20,7 @@ describe('OneAPIService', () => {
   const mockToken = 'test-token-123';
 
   beforeEach(() => {
-    service = new OneAPIService(mockBaseURL, 5000);
+    service = new OneAPIService({ baseURL: mockBaseURL, timeout: 5000 });
     vi.clearAllMocks();
   });
 
@@ -338,7 +338,7 @@ describe('OneAPIService', () => {
 
   describe('error handling', () => {
     it('should handle network timeout', async () => {
-      const shortTimeoutService = new OneAPIService(mockBaseURL, 100);
+      const shortTimeoutService = new OneAPIService({ baseURL: mockBaseURL, timeout: 100 });
 
       (global.fetch as any).mockImplementationOnce(
         () =>

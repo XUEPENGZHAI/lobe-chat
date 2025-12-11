@@ -357,6 +357,13 @@
       "when": 1764303057060,
       "tag": "0050_thread_and_user_id",
       "breakpoints": true
+    },
+    {
+      "idx": 51,
+      "version": "7",
+      "when": 1733836800000,
+      "tag": "0051_add_oneapi_fields",
+      "breakpoints": true
     }
   ],
   "version": "6"

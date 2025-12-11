@@ -18,6 +18,19 @@ export type { UsageChartProps } from './UsageChart';
 export { default as HistoryTable } from './HistoryTable';
 export type { HistoryTableProps } from './HistoryTable';
 
+// Feature Manager
+export { default as FeatureManager, FeatureCard, SubscribeModal } from './FeatureManager';
+export type {
+  Feature,
+  FeaturePricing,
+  FeatureSubscription,
+  SubscriptionPeriod,
+  SubscriptionStatus,
+  FeatureCardProps,
+  SubscribeModalProps,
+  FeatureManagerProps,
+} from './FeatureManager/types';
+
 // Hooks
 export * from './hooks';
 

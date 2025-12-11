@@ -1,72 +1,75 @@
 import { sql } from 'drizzle-orm';
-import * as crypto from 'node:crypto';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { enableBetterAuth, enableNextAuth } from '@/const/auth';
 import { getServerDB } from '@/database/core/db-adaptor';
-import { OneAPIService } from '@/services/oneapi';
-
-// Decryption constants (must match encryption in OneAPISyncService)
-const ALGORITHM = 'aes-256-gcm';
-const IV_LENGTH = 16;
-const AUTH_TAG_LENGTH = 16;
 
 /**
- * Get encryption key from environment
+ * Get one-api user ID for a user
  */
-function getEncryptionKey(): Buffer {
-  const key = process.env.ONEAPI_TOKEN_ENCRYPTION_KEY || 'default-dev-key-32-chars-long!!';
-  return crypto.scryptSync(key, 'salt', 32);
-}
-
-/**
- * Decrypt one-api token
- */
-function decryptToken(encryptedData: string): string {
-  const key = getEncryptionKey();
-  const combined = Buffer.from(encryptedData, 'base64');
-
-  const iv = combined.subarray(0, IV_LENGTH);
-  const authTag = combined.subarray(IV_LENGTH, IV_LENGTH + AUTH_TAG_LENGTH);
-  const encrypted = combined.subarray(IV_LENGTH + AUTH_TAG_LENGTH);
-
-  const decipher = crypto.createDecipheriv(ALGORITHM, key, iv);
-  decipher.setAuthTag(authTag);
-
-  let decrypted = decipher.update(encrypted.toString('hex'), 'hex', 'utf8');
-  decrypted += decipher.final('utf8');
-
-  return decrypted;
-}
-
-/**
- * Get one-api token for a user
- * This retrieves the encrypted token from the user record and decrypts it
- */
-async function getOneAPITokenForUser(userId: string): Promise<string | null> {
+async function getOneAPIUserIdForUser(userId: string): Promise<number | null> {
   try {
     const serverDB = await getServerDB();
 
-    // Query user's one-api token using raw SQL (field added via init-db.sql)
     const result = await serverDB.execute(sql`
-      SELECT oneapi_token_encrypted FROM users WHERE id = ${userId}
+      SELECT oneapi_user_id FROM users WHERE id = ${userId}
     `);
 
     if (!result.rows || result.rows.length === 0) {
       return null;
     }
 
-    const row = result.rows[0] as { oneapi_token_encrypted: string | null };
-    const encryptedToken = row.oneapi_token_encrypted;
+    const row = result.rows[0] as { oneapi_user_id: number | null };
+    return row.oneapi_user_id;
+  } catch (error) {
+    console.error('Error getting one-api user ID:', error);
+    return null;
+  }
+}
 
-    if (!encryptedToken) {
+/**
+ * Get user info from one-api using admin API
+ */
+async function getOneAPIUserInfoViaAdmin(oneapiUserId: number): Promise<{
+  quota: number;
+  used_quota: number;
+  request_count: number;
+} | null> {
+  try {
+    const adminToken = process.env.ONEAPI_ADMIN_TOKEN;
+    if (!adminToken) {
+      console.error('ONEAPI_ADMIN_TOKEN not configured');
       return null;
     }
 
-    // Decrypt the token
-    return decryptToken(encryptedToken);
+    const response = await fetch(
+      `${process.env.ONEAPI_BASE_URL || 'http://one-api:3000'}/api/user/${oneapiUserId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${adminToken}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    if (!response.ok) {
+      console.error('Failed to get user info from one-api:', response.status);
+      return null;
+    }
+
+    const result = await response.json();
+    if (!result.success || !result.data) {
+      console.error('Invalid response from one-api:', result.message);
+      return null;
+    }
+
+    return {
+      quota: result.data.quota || 0,
+      used_quota: result.data.used_quota || 0,
+      request_count: result.data.request_count || 0,
+    };
   } catch (error) {
-    console.error('Error getting one-api token for user:', error);
+    console.error('Error getting user info from one-api:', error);
     return null;
   }
 }
@@ -107,19 +110,25 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get user's one-api token from database
-    const oneapiToken = await getOneAPITokenForUser(userId);
+    // Get user's one-api user ID from database
+    const oneapiUserId = await getOneAPIUserIdForUser(userId);
 
-    if (!oneapiToken) {
+    if (!oneapiUserId) {
       return NextResponse.json(
         { success: false, message: 'one-api 账号未关联，请联系管理员' },
         { status: 400 }
       );
     }
 
-    // Fetch user info from one-api
-    const oneAPIService = new OneAPIService();
-    const userInfo = await oneAPIService.getUserInfo(oneapiToken);
+    // Fetch user info from one-api using admin API
+    const userInfo = await getOneAPIUserInfoViaAdmin(oneapiUserId);
+
+    if (!userInfo) {
+      return NextResponse.json(
+        { success: false, message: '获取用户信息失败' },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
       success: true,

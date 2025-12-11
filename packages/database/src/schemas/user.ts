@@ -2,7 +2,7 @@
 import { DEFAULT_PREFERENCE } from '@lobechat/const';
 import type { CustomPluginParams } from '@lobechat/types';
 import { LobeChatPluginManifest } from '@lobehub/chat-plugin-sdk';
-import { boolean, jsonb, pgTable, primaryKey, text } from 'drizzle-orm/pg-core';
+import { boolean, integer, jsonb, pgTable, primaryKey, text } from 'drizzle-orm/pg-core';
 
 import { timestamps, timestamptz } from './_helpers';
 
@@ -27,6 +27,10 @@ export const users = pgTable('users', {
   emailVerifiedAt: timestamptz('email_verified_at'),
 
   preference: jsonb('preference').$defaultFn(() => DEFAULT_PREFERENCE),
+
+  // OneAPI integration fields
+  oneapiUserId: integer('oneapi_user_id'),
+  oneapiTokenEncrypted: text('oneapi_token_encrypted'),
 
   ...timestamps,
 });

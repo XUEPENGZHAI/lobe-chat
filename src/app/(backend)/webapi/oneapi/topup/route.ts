@@ -33,10 +33,11 @@ function decryptToken(encryptedData: string): string {
   const decipher = crypto.createDecipheriv(ALGORITHM, key, iv);
   decipher.setAuthTag(authTag);
 
-  let decrypted = decipher.update(encrypted.toString('hex'), 'hex', 'utf8');
-  decrypted += decipher.final('utf8');
+  // encrypted 已经是原始字节，直接解密
+  let decrypted = decipher.update(encrypted);
+  decrypted = Buffer.concat([decrypted, decipher.final()]);
 
-  return decrypted;
+  return decrypted.toString('utf8');
 }
 
 /**
