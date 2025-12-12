@@ -13,13 +13,22 @@ export const users = pgTable('users', {
 
   avatar: text('avatar'),
   phone: text('phone'),
+  phoneVerified: boolean('phone_verified').default(false).notNull(),
   firstName: text('first_name'),
   lastName: text('last_name'),
   fullName: text('full_name'),
+  realName: text('real_name'),
 
   isOnboarded: boolean('is_onboarded').default(false),
   // Time user was created in Clerk
   clerkCreatedAt: timestamptz('clerk_created_at'),
+
+  // Identity verification
+  identityStatus: text('identity_status').default('unverified').notNull(),
+  identityVerifiedAt: timestamptz('identity_verified_at'),
+  identityProvider: text('identity_provider'),
+  identityDocumentHash: text('identity_document_hash'),
+  identityDocumentLast4: text('identity_document_last4'),
 
   // Required by better-auth
   emailVerified: boolean('email_verified').default(false).notNull(),

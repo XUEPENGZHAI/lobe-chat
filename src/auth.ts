@@ -2,7 +2,8 @@
 import { serverDB } from '@lobechat/database';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
-import { genericOAuth, magicLink } from 'better-auth/plugins';
+import { genericOAuth, magicLink, phoneNumber } from 'better-auth/plugins';
+import { eq } from 'drizzle-orm';
 
 import { authEnv } from '@/envs/auth';
 import {
@@ -11,6 +12,9 @@ import {
   getVerificationEmailTemplate,
 } from '@/libs/better-auth/email-templates';
 import { initBetterAuthSSOProviders } from '@/libs/better-auth/sso';
+import { smsEnv } from '@/envs/sms';
+import { getSmsProvider } from '@/libs/sms';
+import { users } from '@/database/schemas/user';
 import { EmailService } from '@/server/services/email';
 
 // Email verification link expiration time (in seconds)
@@ -18,6 +22,7 @@ import { EmailService } from '@/server/services/email';
 const VERIFICATION_LINK_EXPIRES_IN = 3600;
 const MAGIC_LINK_EXPIRES_IN = 900;
 const enableMagicLink = authEnv.NEXT_PUBLIC_ENABLE_MAGIC_LINK;
+const enablePhoneLogin = smsEnv.SMS_ENABLED || smsEnv.SMS_PROVIDER === 'mock';
 
 const { socialProviders, genericOAuthProviders } = initBetterAuthSSOProviders();
 
@@ -95,6 +100,29 @@ export const auth = betterAuth({
                 to: email,
                 ...template,
               });
+            },
+          }),
+        ]
+      : []),
+    ...(enablePhoneLogin
+      ? [
+          phoneNumber({
+            signUpOnVerification: true,
+            getTempEmail: ({ phoneNumber }) => `${phoneNumber}@sms.local`,
+            sendOTP: async ({ phoneNumber, code }) => {
+              const provider = getSmsProvider();
+              await provider.send({ phoneNumber, code });
+            },
+            sendPasswordResetOTP: async ({ phoneNumber, code }) => {
+              const provider = getSmsProvider();
+              await provider.send({ phoneNumber, code });
+            },
+            callbackOnVerification: async ({ user }) => {
+              if (!user?.id) return;
+              await serverDB
+                .update(users)
+                .set({ phoneVerified: true })
+                .where(eq(users.id, user.id));
             },
           }),
         ]
