@@ -1,30 +1,70 @@
-import { sql } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { enableBetterAuth, enableNextAuth } from '@/const/auth';
-import { getServerDB } from '@/database/core/db-adaptor';
+import { ONEAPI_BASE_URL, fetchOneAPIUserInfoViaAdmin } from '@/app/(backend)/webapi/oneapi/utils';
+import { ensureOneAPIUserId } from '@/server/services/oneapiSync/credentials';
 
-/**
- * Get one-api user ID for a user
- */
-async function getOneAPIUserIdForUser(userId: string): Promise<number | null> {
-  try {
-    const serverDB = await getServerDB();
+const ONEAPI_PAGE_SIZE = 10; // one-api uses server-side ItemsPerPage (default 10)
+const MAX_PAGES = 200; // safety guard to avoid infinite loops
 
-    const result = await serverDB.execute(sql`
-      SELECT oneapi_user_id FROM users WHERE id = ${userId}
-    `);
+interface OneAPILogEntry {
+  id: number;
+  created_at: number;
+  quota: number;
+  model_name?: string;
+  prompt_tokens?: number;
+  completion_tokens?: number;
+}
 
-    if (!result.rows || result.rows.length === 0) {
-      return null;
+function extractLogs(result: any): OneAPILogEntry[] {
+  if (Array.isArray(result?.data?.logs)) return result.data.logs;
+  if (Array.isArray(result?.data)) return result.data;
+  if (Array.isArray(result)) return result;
+  return [];
+}
+
+async function fetchUserConsumeLogs(
+  username: string,
+  startTimestamp: number,
+  endTimestamp: number,
+): Promise<OneAPILogEntry[]> {
+  const adminToken = process.env.ONEAPI_ADMIN_TOKEN;
+  if (!adminToken) {
+    throw new Error('管理员 token 未配置');
+  }
+
+  const logs: OneAPILogEntry[] = [];
+  let page = 0;
+
+  while (page < MAX_PAGES) {
+    const response = await fetch(
+      `${ONEAPI_BASE_URL}/api/log/?p=${page}&type=2&username=${encodeURIComponent(username)}&start_timestamp=${startTimestamp}&end_timestamp=${endTimestamp}`,
+      {
+        headers: {
+          Authorization: `Bearer ${adminToken}`,
+          'Content-Type': 'application/json',
+        },
+        cache: 'no-store',
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(`获取消费记录失败: ${response.status}`);
     }
 
-    const row = result.rows[0] as { oneapi_user_id: number | null };
-    return row.oneapi_user_id;
-  } catch (error) {
-    console.error('Error getting one-api user ID:', error);
-    return null;
+    const result = await response.json();
+    if (!result.success) {
+      throw new Error(result.message || '获取消费记录失败');
+    }
+
+    const pageLogs = extractLogs(result);
+    logs.push(...pageLogs);
+
+    if (pageLogs.length < ONEAPI_PAGE_SIZE) break;
+    page += 1;
   }
+
+  return logs;
 }
 
 /**
@@ -35,13 +75,9 @@ async function getOneAPIUserIdForUser(userId: string): Promise<number | null> {
  *
  * Query params:
  * - days: number (number of days to fetch, default 30)
- *
- * Requirements: 4.1, 4.2, 4.3, 4.4
- * Property 9: Statistics display completeness
  */
 export async function GET(request: NextRequest) {
   try {
-    // Get user session based on auth method
     let userId: string | undefined;
 
     if (enableNextAuth) {
@@ -59,79 +95,62 @@ export async function GET(request: NextRequest) {
     if (!userId) {
       return NextResponse.json(
         { success: false, message: '未登录，请先登录' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
-    // Parse query params
     const { searchParams } = new URL(request.url);
-    const days = parseInt(searchParams.get('days') || '30', 10);
+    const days = Math.max(parseInt(searchParams.get('days') || '30', 10), 1);
 
-    // Calculate time range
     const now = Math.floor(Date.now() / 1000);
     const startTime = now - days * 24 * 60 * 60;
 
-    // Get user's one-api user ID from database
-    const oneapiUserId = await getOneAPIUserIdForUser(userId);
+    const oneapiUserId = await ensureOneAPIUserId(userId);
 
     if (!oneapiUserId) {
       return NextResponse.json(
         { success: false, message: 'one-api 账号未关联，请联系管理员' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    // Fetch statistics from one-api using admin API
-    const adminToken = process.env.ONEAPI_ADMIN_TOKEN;
-    if (!adminToken) {
+    const userInfo = await fetchOneAPIUserInfoViaAdmin(oneapiUserId);
+    if (!userInfo?.username) {
       return NextResponse.json(
-        { success: false, message: '管理员 token 未配置' },
-        { status: 500 }
+        { success: false, message: '获取 one-api 用户信息失败' },
+        { status: 500 },
       );
     }
 
-    const response = await fetch(
-      `${process.env.ONEAPI_BASE_URL || 'http://one-api:3000'}/api/log/stat?start_timestamp=${startTime}&end_timestamp=${now}&username=`,
-      {
-        headers: {
-          Authorization: `Bearer ${adminToken}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+    const consumeLogs = await fetchUserConsumeLogs(userInfo.username, startTime, now);
 
-    if (!response.ok) {
-      return NextResponse.json(
-        { success: false, message: `获取统计数据失败: ${response.status}` },
-        { status: 400 }
-      );
-    }
+    const totalCalls = consumeLogs.length;
+    const totalQuota = consumeLogs.reduce((sum, log) => sum + (log.quota || 0), 0);
+    const averageQuota = totalCalls > 0 ? totalQuota / totalCalls : 0;
 
-    const result = await response.json();
-    if (!result.success) {
-      return NextResponse.json(
-        { success: false, message: result.message || '获取统计数据失败' },
-        { status: 400 }
-      );
-    }
+    const trendMap = new Map<string, { calls: number; quota: number }>();
+    consumeLogs.forEach((log) => {
+      const date = new Date((log.created_at || 0) * 1000).toISOString().slice(0, 10);
+      const existing = trendMap.get(date) || { calls: 0, quota: 0 };
+      trendMap.set(date, {
+        calls: existing.calls + 1,
+        quota: existing.quota + (log.quota || 0),
+      });
+    });
 
-    // one-api /api/log/stat returns {quota: number} object, not an array
-    const statData = result.data || { quota: 0 };
-    const totalQuota = statData.quota || 0;
+    const trend = Array.from(trendMap.entries())
+      .map(([date, value]) => ({ date, calls: value.calls, quota: value.quota }))
+      .sort((a, b) => a.date.localeCompare(b.date));
 
-    // For detailed stats, we need to query logs and aggregate
-    // For now, return the summary from stat API
     return NextResponse.json({
       success: true,
       data: {
-        // Summary statistics
         summary: {
-          totalCalls: 0, // Not available from stat API
+          totalCalls,
           totalQuota,
-          averageQuota: 0,
+          averageQuota,
         },
-        // Daily trend data (empty for now, would need separate API)
-        trend: [],
+        trend,
       },
     });
   } catch (error) {
@@ -141,7 +160,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(
       { success: false, message: errorMessage },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

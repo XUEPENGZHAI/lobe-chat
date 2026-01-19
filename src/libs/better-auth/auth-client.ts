@@ -2,6 +2,7 @@ import {
   genericOAuthClient,
   inferAdditionalFields,
   magicLinkClient,
+  phoneNumberClient,
 } from 'better-auth/client/plugins';
 import { createAuthClient } from 'better-auth/react';
 
@@ -9,7 +10,9 @@ import type { auth } from '@/auth';
 import { getAuthConfig } from '@/envs/auth';
 
 const { NEXT_PUBLIC_AUTH_URL } = getAuthConfig();
-const enableMagicLink = getAuthConfig().NEXT_PUBLIC_ENABLE_MAGIC_LINK;
+const authConfig = getAuthConfig();
+const enableMagicLink = authConfig.NEXT_PUBLIC_ENABLE_MAGIC_LINK;
+const enablePhoneLogin = authConfig.NEXT_PUBLIC_ENABLE_PHONE_LOGIN;
 
 export const {
   linkSocial,
@@ -30,5 +33,6 @@ export const {
     inferAdditionalFields<typeof auth>(),
     genericOAuthClient(),
     ...(enableMagicLink ? [magicLinkClient()] : []),
+    ...(enablePhoneLogin ? [phoneNumberClient()] : []),
   ],
 });

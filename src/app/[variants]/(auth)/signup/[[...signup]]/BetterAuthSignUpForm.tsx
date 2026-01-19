@@ -120,8 +120,6 @@ export default function BetterAuthSignUpForm() {
           </Flexbox>
 
           <h1 className={styles.title}>{t('betterAuth.signup.title')}</h1>
-          <p className={styles.subtitle}>{t('betterAuth.signup.subtitle')}</p>
-
           <Form form={form} layout="vertical" onFinish={handleSignUp} style={{ marginTop: '2rem' }}>
             <Form.Item
               name="email"

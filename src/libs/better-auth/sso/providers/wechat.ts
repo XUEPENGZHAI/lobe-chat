@@ -21,13 +21,18 @@ type WeChatTokenResponse = {
 const parseWechatScopes = (scope: string | undefined) =>
   scope ? scope.split(' ').filter(Boolean) : [];
 
+const MOCK_WECHAT_ID = 'mock-wechat-app-id';
+const MOCK_WECHAT_SECRET = 'mock-wechat-secret';
+
 const provider: GenericProviderDefinition<{
   AUTH_WECHAT_ID: string;
   AUTH_WECHAT_SECRET: string;
+  AUTH_WECHAT_IS_MOCK?: '1';
 }> = {
   build: (env) => {
     const clientId = env.AUTH_WECHAT_ID;
     const clientSecret = env.AUTH_WECHAT_SECRET;
+    const isMock = env.AUTH_WECHAT_IS_MOCK === '1';
 
     return {
       authorizationUrl: WECHAT_AUTHORIZATION_URL,
@@ -122,16 +127,28 @@ const provider: GenericProviderDefinition<{
       responseMode: 'query',
 
       scopes: ['snsapi_login'],
+      ...(isMock ? { metadata: { isMock: 'true' } } : {}),
     };
   },
 
   checkEnvs: () => {
-    return !!(authEnv.AUTH_WECHAT_ID && authEnv.AUTH_WECHAT_SECRET)
-      ? {
-          AUTH_WECHAT_ID: authEnv.AUTH_WECHAT_ID,
-          AUTH_WECHAT_SECRET: authEnv.AUTH_WECHAT_SECRET,
-        }
-      : false;
+    if (authEnv.AUTH_WECHAT_ID && authEnv.AUTH_WECHAT_SECRET) {
+      return {
+        AUTH_WECHAT_ID: authEnv.AUTH_WECHAT_ID,
+        AUTH_WECHAT_SECRET: authEnv.AUTH_WECHAT_SECRET,
+      };
+    }
+
+    /**
+     * Demo mode: allow WeChat button to render even when real credentials are
+     * not yet provisioned. Login attempts will still fail at runtime, but
+     * Better Auth will no longer throw during build.
+     */
+    return {
+      AUTH_WECHAT_ID: MOCK_WECHAT_ID,
+      AUTH_WECHAT_SECRET: MOCK_WECHAT_SECRET,
+      AUTH_WECHAT_IS_MOCK: '1',
+    };
   },
   id: 'wechat',
   type: 'generic',

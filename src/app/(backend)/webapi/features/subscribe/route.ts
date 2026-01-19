@@ -12,6 +12,7 @@ import {
   OneAPIService,
   withTransaction,
 } from '@/services/oneapi';
+import { ensureOneAPIToken } from '@/server/services/oneapiSync/credentials';
 
 // Decryption constants (must match encryption in OneAPISyncService)
 const ALGORITHM = 'aes-256-gcm';
@@ -45,35 +46,6 @@ function decryptToken(encryptedData: string): string {
   decrypted = Buffer.concat([decrypted, decipher.final()]);
 
   return decrypted.toString('utf8');
-}
-
-/**
- * Get one-api token for a user
- */
-async function getOneAPITokenForUser(userId: string): Promise<string | null> {
-  try {
-    const serverDB = await getServerDB();
-
-    const result = await serverDB.execute(sql`
-      SELECT oneapi_token_encrypted FROM users WHERE id = ${userId}
-    `);
-
-    if (!result.rows || result.rows.length === 0) {
-      return null;
-    }
-
-    const row = result.rows[0] as { oneapi_token_encrypted: string | null };
-    const encryptedToken = row.oneapi_token_encrypted;
-
-    if (!encryptedToken) {
-      return null;
-    }
-
-    return decryptToken(encryptedToken);
-  } catch (error) {
-    console.error('Error getting one-api token for user:', error);
-    return null;
-  }
 }
 
 /**
@@ -288,7 +260,8 @@ export async function POST(request: NextRequest) {
     }
 
     // For paid features, check balance (Requirement 7.3)
-    const oneapiToken = await getOneAPITokenForUser(userId);
+    const encryptedToken = await ensureOneAPIToken(userId);
+    const oneapiToken = encryptedToken ? decryptToken(encryptedToken) : null;
 
     if (!oneapiToken) {
       return NextResponse.json(

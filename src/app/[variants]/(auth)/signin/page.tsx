@@ -4,7 +4,7 @@ import { ActionIcon, Button } from '@lobehub/ui';
 import { LobeHub } from '@lobehub/ui/brand';
 import { Form, Input, type InputRef } from 'antd';
 import { createStyles, useTheme } from 'antd-style';
-import { ChevronLeft, ChevronRight, Lock, Mail } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Hash, Lock, Mail, Phone } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -16,6 +16,21 @@ import { getAuthConfig } from '@/envs/auth';
 import { requestPasswordReset, signIn } from '@/libs/better-auth/auth-client';
 import { isBuiltinProvider, normalizeProviderId } from '@/libs/better-auth/utils/client';
 import { useUserStore } from '@/store/user';
+
+const postJson = async (url: string, body: Record<string, string | boolean>) => {
+  const response = await fetch(url, {
+    body: JSON.stringify(body),
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    method: 'POST',
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const messageText = (data as any)?.error?.message;
+    throw new Error(messageText || response.statusText);
+  }
+  return data;
+};
 
 const useStyles = createStyles(({ css, token }) => ({
   backButton: css`
@@ -86,15 +101,24 @@ interface SignInFormValues {
 export default function SignInPage() {
   const { styles } = useStyles();
   const theme = useTheme();
-  const { t } = useTranslation('auth');
+  const { t: tAuth } = useTranslation('auth');
+  const t = tAuth as (key: string, options?: any) => string;
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { NEXT_PUBLIC_ENABLE_MAGIC_LINK: enableMagicLink } = getAuthConfig();
+  const { NEXT_PUBLIC_ENABLE_MAGIC_LINK: enableMagicLink, NEXT_PUBLIC_ENABLE_PHONE_LOGIN: enablePhoneLogin } =
+    getAuthConfig();
   const [form] = Form.useForm();
+  const [phoneForm] = Form.useForm();
+  const [otpForm] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState<string | null>(null);
   const [step, setStep] = useState<Step>('email');
   const [email, setEmail] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [phoneStep, setPhoneStep] = useState<'input' | 'otp'>('input');
+  const [phoneLoading, setPhoneLoading] = useState(false);
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [otpCountdown, setOtpCountdown] = useState(0);
   const emailInputRef = useRef<InputRef>(null);
   const passwordInputRef = useRef<InputRef>(null);
   const oAuthSSOProviders = useUserStore((s) => s.oAuthSSOProviders || []);
@@ -115,6 +139,12 @@ export default function SignInPage() {
       form.setFieldValue('email', emailParam);
     }
   }, [searchParams, form]);
+
+  useEffect(() => {
+    if (otpCountdown <= 0) return;
+    const timer = setTimeout(() => setOtpCountdown((prev) => prev - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [otpCountdown]);
 
   const handleSendMagicLink = async (targetEmail?: string) => {
     try {
@@ -150,6 +180,68 @@ export default function SignInPage() {
     } finally {
       // no-op
     }
+  };
+
+  const handleSendPhoneOtp = async (values: { phone: string }) => {
+    if (!enablePhoneLogin) return;
+    const normalizedPhone = values.phone.trim();
+    if (!normalizedPhone) return;
+
+    phoneForm.setFieldValue('phone', normalizedPhone);
+    setPhoneLoading(true);
+    try {
+      await postJson('/api/auth/phone-number/send-otp', { phoneNumber: normalizedPhone });
+
+      setPhoneNumber(normalizedPhone);
+      setPhoneStep('otp');
+      setOtpCountdown(60);
+      otpForm.resetFields();
+
+      message.success(t('betterAuth.signin.phoneCodeSent'));
+    } catch (error) {
+      console.error('Phone OTP send error:', error);
+      message.error(t('betterAuth.signin.phoneCodeError'));
+    } finally {
+      setPhoneLoading(false);
+    }
+  };
+
+  const handleVerifyPhoneOtp = async (values: { code: string }) => {
+    if (!enablePhoneLogin || !phoneNumber) {
+      message.error(t('betterAuth.signin.phoneVerifyError'));
+      return;
+    }
+
+    setOtpLoading(true);
+    try {
+      await postJson('/api/auth/phone-number/verify', {
+        code: values.code.trim(),
+        phoneNumber,
+      });
+      const callbackUrl = searchParams.get('callbackUrl') || '/';
+      router.push(callbackUrl);
+    } catch (error) {
+      console.error('Phone OTP verify error:', error);
+      message.error(t('betterAuth.signin.phoneVerifyError'));
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    const phoneValue = phoneNumber || phoneForm.getFieldValue('phone');
+    if (!phoneValue) {
+      message.error(t('betterAuth.signin.phoneCodeError'));
+      return;
+    }
+    await handleSendPhoneOtp({ phone: phoneValue });
+  };
+
+  const handleBackToPhoneInput = () => {
+    setPhoneStep('input');
+    setOtpCountdown(0);
+    setPhoneNumber('');
+    otpForm.resetFields();
   };
 
   // Check if user exists
@@ -363,6 +455,111 @@ export default function SignInPage() {
                   />
                 </Form.Item>
               </Form>
+
+              {enablePhoneLogin && (
+                <div style={{ marginTop: '2rem' }}>
+                  <h2 className={styles.title} style={{ fontSize: 18, marginTop: 0 }}>
+                    {t('betterAuth.signin.phoneStep.title')}
+                  </h2>
+                  <p className={styles.subtitle}>{t('betterAuth.signin.phoneStep.subtitle')}</p>
+
+                  {phoneStep === 'input' && (
+                    <Form
+                      form={phoneForm}
+                      layout="vertical"
+                      onFinish={handleSendPhoneOtp}
+                      style={{ marginTop: '0.5rem' }}
+                    >
+                      <Form.Item
+                        name="phone"
+                        rules={[
+                          { message: t('betterAuth.errors.phoneRequired'), required: true },
+                          {
+                            message: t('betterAuth.errors.phoneInvalid'),
+                            pattern: /^\+?[0-9]{5,15}$/,
+                          },
+                        ]}
+                        style={{ marginBottom: 0 }}
+                      >
+                        <Input
+                          placeholder={t('betterAuth.signin.phonePlaceholder')}
+                          prefix={<Phone size={16} />}
+                          size="large"
+                          suffix={
+                            <ActionIcon
+                              active
+                              icon={ChevronRight}
+                              loading={phoneLoading}
+                              onClick={() => phoneForm.submit()}
+                              size={{ blockSize: 32, size: 16 }}
+                              style={{ color: theme.colorPrimary }}
+                              title={t('betterAuth.signin.phoneStep.send')}
+                            />
+                          }
+                        />
+                      </Form.Item>
+                    </Form>
+                  )}
+
+                  {phoneStep === 'otp' && (
+                    <>
+                      <p className={styles.emailDisplay} style={{ marginTop: '1rem' }}>
+                        {t('betterAuth.signin.phoneStep.codeSubtitle', { phone: phoneNumber })}
+                      </p>
+                      <div
+                        className={styles.backButton}
+                        onClick={handleBackToPhoneInput}
+                        style={{ marginTop: '0.5rem', textAlign: 'center' }}
+                      >
+                        <ChevronLeft size={14} style={{ display: 'inline', verticalAlign: 'middle' }} />
+                        <span style={{ marginLeft: '0.25rem' }}>{t('betterAuth.signin.phoneStep.back')}</span>
+                      </div>
+                      <Form
+                        form={otpForm}
+                        layout="vertical"
+                        onFinish={handleVerifyPhoneOtp}
+                        style={{ marginTop: '1rem' }}
+                      >
+                        <Form.Item
+                          name="code"
+                          rules={[{ message: t('betterAuth.errors.codeRequired'), required: true }]}
+                          style={{ marginBottom: 0 }}
+                        >
+                          <Input
+                            placeholder={t('betterAuth.signin.phoneStep.codePlaceholder')}
+                            prefix={<Hash size={16} />}
+                            size="large"
+                            suffix={
+                              <ActionIcon
+                                active
+                                icon={ChevronRight}
+                                loading={otpLoading}
+                                onClick={() => otpForm.submit()}
+                                size={{ blockSize: 32, size: 16 }}
+                                style={{ color: theme.colorPrimary }}
+                                title={t('betterAuth.signin.phoneStep.verify')}
+                              />
+                            }
+                          />
+                        </Form.Item>
+                      </Form>
+                      <div style={{ marginTop: '1rem' }}>
+                        <Button
+                          block
+                          disabled={otpCountdown > 0}
+                          loading={phoneLoading}
+                          onClick={handleResendOtp}
+                          size="large"
+                        >
+                          {otpCountdown > 0
+                            ? t('betterAuth.signin.phoneStep.resendCountdown', { seconds: otpCountdown })
+                            : t('betterAuth.signin.phoneStep.resend')}
+                        </Button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
             </>
           )}
 

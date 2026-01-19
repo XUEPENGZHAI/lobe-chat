@@ -364,6 +364,13 @@
       "when": 1733836800000,
       "tag": "0051_add_oneapi_fields",
       "breakpoints": true
+    },
+    {
+      "idx": 52,
+      "version": "7",
+      "when": 1766275200000,
+      "tag": "0052_add_user_auth_profile_fields",
+      "breakpoints": true
     }
   ],
   "version": "6"

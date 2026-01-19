@@ -15,6 +15,7 @@ declare global {
       AUTH_SECRET?: string;
       NEXT_PUBLIC_AUTH_URL?: string;
       NEXT_PUBLIC_AUTH_EMAIL_VERIFICATION?: string;
+      NEXT_PUBLIC_ENABLE_PHONE_LOGIN?: string;
       AUTH_SSO_PROVIDERS?: string;
 
       // ===== Next Auth ===== //
@@ -122,6 +123,7 @@ export const getAuthConfig = () => {
       NEXT_PUBLIC_AUTH_URL: z.string().optional(),
       NEXT_PUBLIC_AUTH_EMAIL_VERIFICATION: z.boolean().optional().default(false),
       NEXT_PUBLIC_ENABLE_MAGIC_LINK: z.boolean().optional().default(false),
+      NEXT_PUBLIC_ENABLE_PHONE_LOGIN: z.boolean().optional().default(false),
 
       // ---------------------------------- next auth ----------------------------------
       NEXT_PUBLIC_ENABLE_NEXT_AUTH: z.boolean().optional(),
@@ -241,6 +243,7 @@ export const getAuthConfig = () => {
         (process.env.NEXTAUTH_URL ? new URL(process.env.NEXTAUTH_URL).origin : undefined),
       NEXT_PUBLIC_AUTH_EMAIL_VERIFICATION: process.env.NEXT_PUBLIC_AUTH_EMAIL_VERIFICATION === '1',
       NEXT_PUBLIC_ENABLE_MAGIC_LINK: process.env.NEXT_PUBLIC_ENABLE_MAGIC_LINK === '1',
+      NEXT_PUBLIC_ENABLE_PHONE_LOGIN: process.env.NEXT_PUBLIC_ENABLE_PHONE_LOGIN === '1',
       // Fallback to NEXT_AUTH_SECRET for seamless migration from next-auth
       AUTH_SECRET: process.env.AUTH_SECRET || process.env.NEXT_AUTH_SECRET,
       // Fallback to NEXT_AUTH_SSO_PROVIDERS for seamless migration from next-auth

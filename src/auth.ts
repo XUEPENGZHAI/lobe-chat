@@ -107,17 +107,24 @@ export const auth = betterAuth({
     ...(enablePhoneLogin
       ? [
           phoneNumber({
-            signUpOnVerification: true,
-            getTempEmail: ({ phoneNumber }) => `${phoneNumber}@sms.local`,
-            sendOTP: async ({ phoneNumber, code }) => {
+            signUpOnVerification: {
+              getTempEmail: (phoneNumber: string) => `${phoneNumber}@sms.local`,
+            },
+            sendOTP: async ({ phoneNumber, code }: { phoneNumber: string; code: string }) => {
               const provider = getSmsProvider();
               await provider.send({ phoneNumber, code });
             },
-            sendPasswordResetOTP: async ({ phoneNumber, code }) => {
+            sendPasswordResetOTP: async ({
+              phoneNumber,
+              code,
+            }: {
+              phoneNumber: string;
+              code: string;
+            }) => {
               const provider = getSmsProvider();
               await provider.send({ phoneNumber, code });
             },
-            callbackOnVerification: async ({ user }) => {
+            callbackOnVerification: async ({ user }: { user?: { id?: string } }) => {
               if (!user?.id) return;
               await serverDB
                 .update(users)
